@@ -1,0 +1,51 @@
+# 配置示例文件
+# 复制此文件为 application.yml 并填入实际配置
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: wechat-work-callback
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    timeout: 3000ms
+    # password: your_redis_password  # 如果Redis设置了密码，取消注释并填写
+
+# 企业微信配置
+wechat:
+  work:
+    # ===== 以下配置需要从企业微信管理后台获取 =====
+    
+    # 企业ID（在"我的企业" -> "企业信息"中查看）
+    corp-id: ww1234567890abcdef
+    
+    # 客户联系Secret（在"应用管理" -> "客户联系"中查看）
+    contact-secret: abc123def456ghi789jkl012mno345pqr678stu901vwx234yz
+    
+    # 接收消息的Token（在"应用管理" -> "客户联系" -> "接收消息"中配置）
+    token: YourTokenHere123456
+    
+    # 接收消息的EncodingAESKey（在"应用管理" -> "客户联系" -> "接收消息"中配置）
+    encoding-aes-key: abcdefghijklmnopqrstuvwxyz01234567890ABCD
+    
+    # H5链接的基础URL（替换为你的实际H5页面地址）
+    h5-base-url: https://your-domain.com/h5/customer
+    
+    # Access Token缓存时间（秒），默认7000秒
+    token-expire-time: 7000
+
+# 日志配置
+logging:
+  level:
+    com.company.wechat: debug
+    root: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/wechat-callback.log
+    max-size: 10MB
+    max-history: 30
+

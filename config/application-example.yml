@@ -1,0 +1,85 @@
+# 企业微信回调服务配置示例
+# 请复制此文件为 application.yml 并修改为实际配置
+
+server:
+  port: 8080
+  # 生产环境可以配置SSL
+  # ssl:
+  #   enabled: true
+  #   key-store: classpath:keystore.p12
+  #   key-store-password: your-password
+  #   key-store-type: PKCS12
+
+spring:
+  application:
+    name: wechat-work-callback
+  
+  # Redis配置
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    timeout: 3000ms
+    # 如果Redis设置了密码，取消注释下面一行
+    # password: your-redis-password
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+# 企业微信配置
+wechat:
+  work:
+    # ===== 必填配置 =====
+    # 企业ID（在企业微信管理后台-我的企业-企业信息中获取）
+    corp-id: ww1234567890abcdef
+    
+    # 客户联系Secret（在应用管理-客户联系中获取）
+    contact-secret: YOUR_CONTACT_SECRET_HERE
+    
+    # 回调Token（在企业微信管理后台配置接收事件服务器时生成）
+    token: YOUR_TOKEN_HERE
+    
+    # 回调EncodingAESKey（在企业微信管理后台配置接收事件服务器时生成，43位字符）
+    encoding-aes-key: YOUR_ENCODING_AES_KEY_43_CHARACTERS_HERE
+    
+    # ===== H5配置 =====
+    # H5页面的基础URL（客户点击链接后访问的页面）
+    h5-base-url: https://your-domain.com/h5/customer
+    
+    # ===== 可选配置 =====
+    # Access Token缓存时间（秒），默认7000秒（约2小时，企业微信token有效期为2小时）
+    token-expire-time: 7000
+
+# 日志配置
+logging:
+  level:
+    # 应用日志级别（开发环境用debug，生产环境用info）
+    com.company.wechat: debug
+    # Spring框架日志级别
+    org.springframework: info
+    # Root日志级别
+    root: info
+  
+  # 日志输出格式
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  
+  # 日志文件配置（可选，如果使用logback-spring.xml则此配置会被覆盖）
+  # file:
+  #   name: logs/wechat-work-callback.log
+  #   max-size: 100MB
+  #   max-history: 30
+
+# Actuator监控端点配置（可选）
+# management:
+#   endpoints:
+#     web:
+#       exposure:
+#         include: health,info,metrics
+#   endpoint:
+#     health:
+#       show-details: always
+
