@@ -56,7 +56,7 @@ mvn spring-boot:run
 ### 4. 配置企业微信回调
 在企业微信管理后台配置回调URL：
 ```
-http://your-domain.com/api/wechat/callback
+http://47.108.150.198:8080/api/wechat/callback
 ```
 
 ## 项目结构

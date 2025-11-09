@@ -22,7 +22,7 @@ wechat:
     # 接收消息的EncodingAESKey
     encoding-aes-key: 3b3NP2JJACgzakSh3Enh1vGsWsWVcAbsXjlVeFEKLRi
     # H5链接的基础URL
-    h5-base-url: https://paulene-archangelic-willette.ngrok-free.dev/h5/oauth.html
+    h5-base-url: http://47.108.150.198:8080/h5/oauth.html
     # Access Token缓存时间（秒）
     token-expire-time: 7000
 
