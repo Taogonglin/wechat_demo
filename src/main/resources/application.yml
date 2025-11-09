@@ -15,8 +15,9 @@ wechat:
   work:
     # 企业ID
     corp-id: wwd79126fde9eba684
-    # 客户联系Secret（在应用管理-客户联系获取）
-    contact-secret: your_contact_secret  # ← 还需要配置！在"应用管理-客户联系"获取
+    # 应用Secret（用于获取access_token，在"应用管理-自建应用"中获取）
+    # 注意：需要将应用配置到"微信客服-可调用接口的应用"中
+    app-secret: A_EExWJkm0mioE_h8esb_Q10tsF3S1DB4Rqtbwm9ATs  # ← 必填！
     # 接收消息的Token
     token: JKBYwA8yEwhjKEyKWRQe
     # 接收消息的EncodingAESKey

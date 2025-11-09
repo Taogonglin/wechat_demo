@@ -20,9 +20,10 @@ public class WechatWorkConfig {
     private String corpId;
 
     /**
-     * 客户联系Secret
+     * 应用Secret（用于获取access_token）
+     * 注意：需要使用"微信客服"应用的secret，不是"客户联系"的secret
      */
-    private String contactSecret;
+    private String appSecret;
 
     /**
      * 回调Token
