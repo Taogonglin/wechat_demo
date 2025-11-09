@@ -14,15 +14,15 @@ spring:
 wechat:
   work:
     # 企业ID
-    corp-id: your_corp_id
+    corp-id: wwd79126fde9eba684
     # 客户联系Secret（在应用管理-客户联系获取）
-    contact-secret: your_contact_secret
+    contact-secret: your_contact_secret  # ← 还需要配置！在"应用管理-客户联系"获取
     # 接收消息的Token
-    token: your_token
+    token: JKBYwA8yEwhjKEyKWRQe
     # 接收消息的EncodingAESKey
-    encoding-aes-key: your_encoding_aes_key
+    encoding-aes-key: 3b3NP2JJACgzakSh3Enh1vGsWsWVcAbsXjlVeFEKLRi
     # H5链接的基础URL
-    h5-base-url: https://your-domain.com/h5/customer
+    h5-base-url: https://paulene-archangelic-willette.ngrok-free.dev/h5/oauth.html
     # Access Token缓存时间（秒）
     token-expire-time: 7000
 

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>客户信息采集 - 身份验证</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            color: #4caf50;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 8px;
+        }
+
+        #customerForm {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🔐</div>
+            <h1>身份验证中</h1>
+            <p>正在识别您的身份，请稍候...</p>
+        </div>
+
+        <!-- 加载中 -->
+        <div class="loading" id="loadingBox">
+            <div class="spinner"></div>
+            <div class="loading-text">正在验证身份...</div>
+        </div>
+
+        <!-- 用户信息 -->
+        <div class="info-box" id="infoBox">
+            <div class="info-item">
+                <span class="info-label">客户标识</span>
+                <span class="info-value" id="externalUserId">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">验证方式</span>
+                <span class="info-value" id="verifyMethod">OAuth认证</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">验证时间</span>
+                <span class="info-value" id="verifyTime">-</span>
+            </div>
+        </div>
+
+        <!-- 表单 -->
+        <form id="customerForm">
+            <div class="form-group">
+                <label class="form-label">您的姓名 *</label>
+                <input type="text" class="form-input" id="name" placeholder="请输入您的姓名" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">手机号码 *</label>
+                <input type="tel" class="form-input" id="phone" placeholder="请输入您的手机号" required pattern="[0-9]{11}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">公司名称</label>
+                <input type="text" class="form-input" id="company" placeholder="请输入您的公司名称（选填）">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">备注信息</label>
+                <input type="text" class="form-input" id="remark" placeholder="您可以留下其他信息（选填）">
+            </div>
+
+            <button type="submit" class="btn">提交信息</button>
+        </form>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage">
+            <div class="icon">✅</div>
+            提交成功！我们会尽快与您联系。
+        </div>
+    </div>
+
+    <script>
+        // 配置
+        const API_BASE_URL = window.location.origin;
+        let externalUserIdGlobal = '';
+
+        // 获取URL参数
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // 格式化时间
+        function formatDateTime(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        // 显示错误
+        function showError(message) {
+            const errorBox = document.getElementById('errorMessage');
+            errorBox.textContent = message;
+            errorBox.style.display = 'block';
+            document.getElementById('loadingBox').style.display = 'none';
+        }
+
+        // 显示表单
+        function showForm(externalUserId) {
+            externalUserIdGlobal = externalUserId;
+            
+            document.getElementById('loadingBox').style.display = 'none';
+            document.getElementById('infoBox').style.display = 'block';
+            document.getElementById('customerForm').style.display = 'block';
+            
+            document.getElementById('externalUserId').textContent = externalUserId;
+            document.getElementById('verifyTime').textContent = formatDateTime(new Date());
+            
+            document.querySelector('.header h1').textContent = '欢迎！';
+            document.querySelector('.header p').textContent = '身份验证成功，请完善您的信息';
+            document.querySelector('.header .icon').textContent = '👋';
+        }
+
+        // 通过OAuth获取身份
+        async function authenticateByOAuth() {
+            // 检查URL中是否已经有code（从OAuth回调返回）
+            const code = getUrlParameter('code');
+            
+            if (!code) {
+                // 没有code，需要跳转到OAuth授权页面
+                console.log('没有code，跳转到OAuth授权');
+                redirectToOAuth();
+                return;
+            }
+
+            // 有code，调用后端API获取用户信息
+            console.log('获取到code:', code);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/oauth/userinfo?code=${code}`);
+                const data = await response.json();
+                
+                console.log('用户信息:', data);
+                
+                if (data.success && data.externalUserId) {
+                    // 成功获取到external_userid
+                    showForm(data.externalUserId);
+                } else {
+                    showError('身份验证失败，无法获取您的信息');
+                }
+            } catch (error) {
+                console.error('获取用户信息失败:', error);
+                showError('网络错误，请稍后重试');
+            }
+        }
+
+        // 跳转到OAuth授权页面
+        function redirectToOAuth() {
+            // 当前页面作为回调地址
+            const redirectUri = encodeURIComponent(window.location.href.split('?')[0]);
+            const state = 'customer_info';
+            
+            // 构建OAuth URL（也可以调用后端API获取）
+            const corpId = 'YOUR_CORP_ID'; // 需要替换为实际的企业ID，或从后端获取
+            const oauthUrl = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${corpId}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_privateinfo&state=${state}#wechat_redirect`;
+            
+            console.log('跳转到OAuth:', oauthUrl);
+            window.location.href = oauthUrl;
+        }
+
+        // 检查是否直接从URL获取到external_userid（旧方式兼容）
+        function checkDirectParameter() {
+            const externalUserId = getUrlParameter('external_userid');
+            const verified = getUrlParameter('verified');
+            
+            if (externalUserId) {
+                console.log('从URL参数获取external_userid:', externalUserId);
+                showForm(externalUserId);
+                return true;
+            }
+            
+            return false;
+        }
+
+        // 表单提交
+        document.getElementById('customerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = {
+                externalUserId: externalUserIdGlobal,
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                company: document.getElementById('company').value,
+                remark: document.getElementById('remark').value,
+                submitTime: new Date().toISOString(),
+                source: 'oauth'
+            };
+
+            console.log('提交的数据:', formData);
+
+            // TODO: 调用后端API保存数据
+            // fetch('/api/customer/submit', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(formData)
+            // }).then(response => response.json())
+            //   .then(data => {
+            //       console.log('提交成功:', data);
+            //       showSuccess();
+            //   })
+            //   .catch(error => {
+            //       console.error('提交失败:', error);
+            //       showError('提交失败，请稍后重试');
+            //   });
+
+            // 演示：直接显示成功
+            showSuccess();
+        });
+
+        function showSuccess() {
+            document.getElementById('customerForm').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'block';
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，开始身份验证');
+            
+            // 优先检查是否有直接的参数（兼容旧方式）
+            if (!checkDirectParameter()) {
+                // 使用OAuth方式认证
+                authenticateByOAuth();
+            }
+        });
+    </script>
+</body>
+</html>
+

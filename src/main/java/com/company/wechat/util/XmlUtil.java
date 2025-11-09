@@ -39,8 +39,8 @@ public class XmlUtil {
             String msgIdStr = getElementValue(root, "MsgId");
             if (msgIdStr != null && !msgIdStr.isEmpty()) {
                 message.setMsgId(Long.parseLong(msgIdStr));
-            }
-            
+    }
+
             message.setOriginalXml(xml);
 
             return message;
@@ -81,5 +81,5 @@ public class XmlUtil {
                 "<TimeStamp>" + System.currentTimeMillis() / 1000 + "</TimeStamp>" +
                 "<Nonce><![CDATA[" + AesUtil.getRandomStr() + "]]></Nonce>" +
                 "</xml>";
+        }
     }
-}

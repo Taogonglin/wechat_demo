@@ -28,7 +28,7 @@ public class WechatCallbackService {
 
     /**
      * 验证回调URL
-     * 
+     *
      * @param msgSignature 消息签名
      * @param timestamp 时间戳
      * @param nonce 随机数
@@ -54,7 +54,7 @@ public class WechatCallbackService {
             // 解密echostr
             AesUtil aesUtil = new AesUtil(config.getEncodingAesKey(), config.getCorpId());
             String result = aesUtil.decrypt(echostr);
-            
+
             logger.info("URL验证成功");
             return result;
         } catch (Exception e) {
@@ -65,7 +65,7 @@ public class WechatCallbackService {
 
     /**
      * 处理回调消息
-     * 
+     *
      * @param msgSignature 消息签名
      * @param timestamp 时间戳
      * @param nonce 随机数
@@ -188,5 +188,5 @@ public class WechatCallbackService {
      */
     private String buildSuccessResponse() {
         return "success";
+        }
     }
-}

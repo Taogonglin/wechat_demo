@@ -1,0 +1,38 @@
+====================================
+企业微信配置信息
+====================================
+
+✅ 已配置：
+- 企业ID: wwd79126fde9eba684
+- Token: JKBYwA8yEwhjKEyKWRQe
+- EncodingAESKey: 3b3NP2JJACgzakSh3Enh1vGsWsWVcAbsXjlVeFEKLRi
+
+❌ 还需要配置：
+
+1. contact-secret（客户联系Secret）
+   获取方式：
+   - 登录企业微信管理后台: https://work.weixin.qq.com/
+   - 进入「应用管理」→「客户联系」
+   - 点击「查看Secret」
+   - 复制Secret到 application.yml 的 contact-secret 字段
+
+2. h5-base-url（H5页面地址）
+   步骤：
+   - 先启动ngrok: ngrok http 8080
+   - 复制ngrok生成的URL，例如: https://abc123.ngrok.io
+   - 更新到 application.yml: https://abc123.ngrok.io/h5/oauth.html
+
+====================================
+下一步操作：
+====================================
+
+1. 获取contact-secret并更新到配置文件
+2. 启动Redis: redis-server 或 brew services start redis
+3. 用IDEA启动项目，或运行: mvn spring-boot:run
+4. 新终端启动ngrok: ngrok http 8080
+5. 把ngrok URL更新到配置文件的 h5-base-url
+6. 重启Spring Boot应用
+7. 在企业微信后台配置回调URL
+
+详细步骤请查看: 测试步骤.md
+
