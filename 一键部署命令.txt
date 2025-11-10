@@ -1,0 +1,27 @@
+========================================
+一键部署命令（复制到终端执行）
+========================================
+
+ssh root@47.108.150.198 << 'ENDSSH'
+cd /root/wechat_demo
+git pull origin main
+ps aux | grep wechat-work-callback | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || echo "没有旧服务"
+if ! pgrep -x "redis-server" > /dev/null; then redis-server --daemonize yes; fi
+mvn clean package -DskipTests
+nohup java -jar target/wechat-work-callback-1.0.0.jar > /root/wechat-app.log 2>&1 &
+sleep 3
+echo "部署完成，进程ID: $!"
+tail -20 /root/wechat-app.log
+curl http://localhost:8080/api/wechat/health
+ENDSSH
+
+========================================
+或者分步执行（更安全）
+========================================
+
+# 1. 登录服务器
+ssh root@47.108.150.198
+
+# 2. 复制以下命令到服务器执行
+cd /root/wechat_demo && git pull origin main && ps aux | grep wechat-work-callback | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || echo "没有旧服务" && mvn clean package -DskipTests && nohup java -jar target/wechat-work-callback-1.0.0.jar > /root/wechat-app.log 2>&1 & && sleep 3 && tail -f /root/wechat-app.log
+

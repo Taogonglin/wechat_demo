@@ -28,8 +28,8 @@ public class WechatApiService {
     private static final String GET_TOKEN_URL = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s";
     // 发送欢迎语API（外部联系人欢迎语接口）
     private static final String SEND_WELCOME_MSG_URL = "https://qyapi.weixin.qq.com/cgi-bin/externalcontact/send_welcome_msg?access_token=%s";
-    // 发送应用消息API（用于已添加的客户）
-    private static final String SEND_MESSAGE_URL = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s";
+    // 发送消息给外部联系人API
+    private static final String SEND_MESSAGE_URL = "https://qyapi.weixin.qq.com/cgi-bin/externalcontact/send_msg?access_token=%s";
 
     @Autowired
     private WechatWorkConfig config;
@@ -115,41 +115,39 @@ public class WechatApiService {
     }
 
     /**
-     * 发送文本消息给客户（已添加的客户）
+     * 发送文本消息给外部联系人（已添加的客户）
      * 
      * @param externalUserId 客户的external_userid
      * @param content 消息内容
-     * @param staffUserId 企业成员UserID
+     * @param staffUserId 企业成员UserID（发送者）
      */
     public boolean sendTextMessage(String externalUserId, String content, String staffUserId) {
         try {
             String accessToken = getAccessToken();
             String url = String.format(SEND_MESSAGE_URL, accessToken);
 
-            // 构建消息内容
-            TextMessage textMessage = TextMessage.builder()
-                    .content(content)
-                    .build();
+            // 构建外部联系人消息请求（不同于应用消息）
+            // 参考：https://developer.work.weixin.qq.com/document/path/92321
+            java.util.Map<String, Object> request = new java.util.HashMap<>();
+            request.put("sender", staffUserId);           // 发送人的userid
+            request.put("external_userid", externalUserId); // 外部联系人userid
+            request.put("msgtype", "text");
+            
+            java.util.Map<String, String> textContent = new java.util.HashMap<>();
+            textContent.put("content", content);
+            request.put("text", textContent);
 
-            // 构建发送请求
-            TextMessage.SendRequest sendRequest = TextMessage.SendRequest.builder()
-                    .msgType("text")
-                    .toUser(externalUserId)
-                    .text(textMessage)
-                    .enableDuplicateCheck(0)
-                    .build();
-
-            String jsonRequest = gson.toJson(sendRequest);
-            logger.info("发送消息给客户: {}, 内容: {}", externalUserId, content);
+            String jsonRequest = gson.toJson(request);
+            logger.info("发送消息给外部联系人: externalUserId={}, sender={}", externalUserId, staffUserId);
 
             String response = HttpUtil.doPostString(url, jsonRequest);
             WechatResponse<?> result = gson.fromJson(response, WechatResponse.class);
 
             if (result.isSuccess()) {
-                logger.info("发送消息成功: {}", externalUserId);
+                logger.info("✓ 发送消息成功: {}", externalUserId);
                 return true;
             } else {
-                logger.error("发送消息失败: {}, 错误: {}", externalUserId, result.getErrMsg());
+                logger.error("✗ 发送消息失败: {}, 错误: {}", externalUserId, result.getErrMsg());
                 return false;
             }
         } catch (Exception e) {

@@ -53,13 +53,24 @@ public class CustomerEventService {
             // 构建欢迎消息
             String welcomeMessage = buildWelcomeMessage(h5Link);
 
-            // 发送欢迎语给客户（使用welcome_code）
+            // 发送欢迎语给客户（使用welcome_code，失败时自动降级）
             boolean success = false;
             if (event.getWelcomeCode() != null && !event.getWelcomeCode().isEmpty()) {
-                // 使用欢迎语API发送（推荐，仅在新添加客户时可用）
+                // 优先使用欢迎语API发送（推荐）
+                logger.info("尝试使用欢迎语API发送消息...");
                 success = wechatApiService.sendWelcomeMessage(event.getWelcomeCode(), welcomeMessage);
+                
+                // 如果欢迎语API发送失败（如：客户已开始聊天），降级使用普通消息API
+                if (!success) {
+                    logger.warn("欢迎语API发送失败（可能客户已发送消息），降级使用普通消息API");
+                    success = wechatApiService.sendTextMessage(
+                            event.getExternalUserId(),
+                            welcomeMessage,
+                            event.getUserId()
+                    );
+                }
             } else {
-                // 如果没有welcome_code，使用普通消息API（备用方案）
+                // 如果没有welcome_code，直接使用普通消息API
                 logger.warn("未获取到welcome_code，使用普通消息API发送");
                 success = wechatApiService.sendTextMessage(
                         event.getExternalUserId(),
@@ -69,9 +80,9 @@ public class CustomerEventService {
             }
 
             if (success) {
-                logger.info("成功发送H5链接给客户: {}", event.getExternalUserId());
+                logger.info("✓ 成功发送H5链接给客户: {}", event.getExternalUserId());
             } else {
-                logger.error("发送H5链接失败: {}", event.getExternalUserId());
+                logger.error("✗ 发送H5链接失败: {}", event.getExternalUserId());
             }
 
         } catch (Exception e) {
