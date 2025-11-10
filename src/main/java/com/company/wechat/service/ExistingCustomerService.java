@@ -60,20 +60,25 @@ public class ExistingCustomerService {
             String accessToken = wechatApiService.getAccessToken();
             String url = String.format(GET_EXTERNAL_CONTACT_LIST, accessToken, staffUserId);
             
-            logger.info("获取员工客户列表: staffUserId={}", staffUserId);
+            logger.debug("获取员工客户列表: staffUserId={}", staffUserId);
             String response = HttpUtil.doGet(url);
             
             ExternalContactListResponse result = gson.fromJson(response, ExternalContactListResponse.class);
             
             if (result.getErrcode() == 0 && result.getExternalUserid() != null) {
-                logger.info("获取到{}个客户", result.getExternalUserid().size());
+                logger.info("员工 {} 有 {} 个客户", staffUserId, result.getExternalUserid().size());
                 return result.getExternalUserid();
             } else {
-                logger.error("获取客户列表失败: {}", result.getErrmsg());
+                // 错误码84061表示该成员不是外部联系人配置成员，跳过即可
+                if (result.getErrcode() == 84061) {
+                    logger.debug("员工 {} 未配置客户联系功能（errcode=84061），跳过", staffUserId);
+                } else {
+                    logger.warn("获取员工 {} 客户列表失败: [{}] {}", staffUserId, result.getErrcode(), result.getErrmsg());
+                }
                 return Collections.emptyList();
             }
         } catch (Exception e) {
-            logger.error("获取客户列表异常", e);
+            logger.error("获取员工 {} 客户列表异常: {}", staffUserId, e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -520,23 +525,25 @@ public class ExistingCustomerService {
             return Collections.emptyMap();
         }
         
-        logger.info("开始获取{}个员工的客户列表", staffUserIds.size());
+        logger.info("开始获取{}个员工的客户列表...", staffUserIds.size());
         
         // 使用Map存储客户ID和第一个添加该客户的员工ID（用于发送消息）
         Map<String, String> customerToStaffMap = new HashMap<>();
+        int staffWithCustomers = 0;
         
         for (String staffUserId : staffUserIds) {
             try {
                 List<String> customers = getCustomerList(staffUserId);
                 
-                for (String externalUserId : customers) {
-                    // 如果客户尚未添加到映射中，记录该客户和员工的关系
-                    if (!customerToStaffMap.containsKey(externalUserId)) {
-                        customerToStaffMap.put(externalUserId, staffUserId);
+                if (!customers.isEmpty()) {
+                    staffWithCustomers++;
+                    for (String externalUserId : customers) {
+                        // 如果客户尚未添加到映射中，记录该客户和员工的关系
+                        if (!customerToStaffMap.containsKey(externalUserId)) {
+                            customerToStaffMap.put(externalUserId, staffUserId);
+                        }
                     }
                 }
-                
-                logger.info("员工 {} 有 {} 个客户", staffUserId, customers.size());
                 
                 // 避免频率限制
                 Thread.sleep(50);
@@ -546,11 +553,12 @@ public class ExistingCustomerService {
                 logger.error("获取客户列表被中断");
                 break;
             } catch (Exception e) {
-                logger.error("获取员工客户列表失败: staffUserId={}", staffUserId, e);
+                logger.error("获取员工 {} 客户列表失败: {}", staffUserId, e.getMessage());
             }
         }
         
-        logger.info("去重后共有{}个客户", customerToStaffMap.size());
+        logger.info("统计：共{}个员工，{}个有客户，去重后共{}个客户", 
+                staffUserIds.size(), staffWithCustomers, customerToStaffMap.size());
         return customerToStaffMap;
     }
 
