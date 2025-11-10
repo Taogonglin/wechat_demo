@@ -28,7 +28,7 @@ public class WechatApiService {
     private static final String GET_TOKEN_URL = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s";
     // 发送欢迎语API（外部联系人欢迎语接口）
     private static final String SEND_WELCOME_MSG_URL = "https://qyapi.weixin.qq.com/cgi-bin/externalcontact/send_welcome_msg?access_token=%s";
-    // 发送消息给外部联系人API
+    // ⚠️ 注意：企业微信不支持主动给外部联系人发送普通消息，此URL仅用于文档说明
     private static final String SEND_MESSAGE_URL = "https://qyapi.weixin.qq.com/cgi-bin/externalcontact/send_msg?access_token=%s";
 
     @Autowired
@@ -117,43 +117,32 @@ public class WechatApiService {
     /**
      * 发送文本消息给外部联系人（已添加的客户）
      * 
+     * ⚠️ 注意：企业微信不支持主动给外部联系人发送普通消息！
+     * 只能通过以下方式发送消息：
+     * 1. 使用 welcome_code 发送欢迎语（仅在客户添加时20秒内有效）
+     * 2. 使用企业群发功能（批量发送）
+     * 3. 客户主动发送消息后，在会话中回复
+     * 
+     * 此方法保留仅用于文档说明，实际调用会失败（404）
+     * 
      * @param externalUserId 客户的external_userid
      * @param content 消息内容
      * @param staffUserId 企业成员UserID（发送者）
+     * @return 始终返回 false
      */
+    @Deprecated
     public boolean sendTextMessage(String externalUserId, String content, String staffUserId) {
-        try {
-            String accessToken = getAccessToken();
-            String url = String.format(SEND_MESSAGE_URL, accessToken);
-
-            // 构建外部联系人消息请求（不同于应用消息）
-            // 参考：https://developer.work.weixin.qq.com/document/path/92321
-            java.util.Map<String, Object> request = new java.util.HashMap<>();
-            request.put("sender", staffUserId);           // 发送人的userid
-            request.put("external_userid", externalUserId); // 外部联系人userid
-            request.put("msgtype", "text");
-            
-            java.util.Map<String, String> textContent = new java.util.HashMap<>();
-            textContent.put("content", content);
-            request.put("text", textContent);
-
-            String jsonRequest = gson.toJson(request);
-            logger.info("发送消息给外部联系人: externalUserId={}, sender={}", externalUserId, staffUserId);
-
-            String response = HttpUtil.doPostString(url, jsonRequest);
-            WechatResponse<?> result = gson.fromJson(response, WechatResponse.class);
-
-            if (result.isSuccess()) {
-                logger.info("✓ 发送消息成功: {}", externalUserId);
-                return true;
-            } else {
-                logger.error("✗ 发送消息失败: {}, 错误: {}", externalUserId, result.getErrMsg());
-                return false;
-            }
-        } catch (Exception e) {
-            logger.error("发送消息异常: " + externalUserId, e);
-            return false;
-        }
+        logger.warn("========================================");
+        logger.warn("⚠️ 企业微信限制：无法主动给外部联系人发送普通消息");
+        logger.warn("请使用以下方式：");
+        logger.warn("  1. 确保客户添加时立即发送（使用welcome_code）");
+        logger.warn("  2. 使用企业群发功能");
+        logger.warn("  3. 等待客户主动发送消息后回复");
+        logger.warn("========================================");
+        logger.warn("需要发送的内容: {}", content);
+        logger.warn("目标客户: {}", externalUserId);
+        logger.warn("发送者: {}", staffUserId);
+        return false;
     }
 
     /**
