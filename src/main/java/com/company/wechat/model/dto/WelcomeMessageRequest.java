@@ -6,9 +6,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
- * 发送欢迎语请求（客服欢迎语接口）
- * 根据官方文档：https://developer.work.weixin.qq.com/document/path/95122
+ * 发送欢迎语请求（外部联系人欢迎语接口）
+ * 根据官方文档：https://developer.work.weixin.qq.com/document/path/92137
  * 
  * @author Company
  */
@@ -19,31 +21,21 @@ import lombok.NoArgsConstructor;
 public class WelcomeMessageRequest {
 
     /**
-     * 事件响应消息对应的code（即welcome_code）
-     * 通过事件回调下发，仅可使用一次
+     * 通过添加外部联系人事件推送给企业的发送欢迎语的凭证
+     * 有效期为20秒
      */
-    @SerializedName("code")
-    private String code;
+    @SerializedName("welcome_code")
+    private String welcomeCode;
 
     /**
-     * 消息ID（可选）
-     * 如果请求参数指定了msgid，则原样返回，否则系统自动生成并返回
-     * 不多于32字节，字符串取值范围(正则表达式)：[0-9a-zA-Z_-]*
-     */
-    @SerializedName("msgid")
-    private String msgid;
-
-    /**
-     * 消息类型
-     * 对不同的msgtype，有相应的结构描述
-     */
-    @SerializedName("msgtype")
-    private String msgtype;
-
-    /**
-     * 文本消息内容（当msgtype为text时使用）
+     * 文本消息内容
      */
     private TextContent text;
+
+    /**
+     * 附件，最多可添加9个附件
+     */
+    private List<Attachment> attachments;
 
     /**
      * 文本内容
@@ -54,9 +46,146 @@ public class WelcomeMessageRequest {
     @AllArgsConstructor
     public static class TextContent {
         /**
-         * 消息内容
+         * 消息文本内容，最长为4000字节
          */
         private String content;
+    }
+
+    /**
+     * 附件信息
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Attachment {
+        /**
+         * 附件类型：image、link、miniprogram、video、file
+         */
+        private String msgtype;
+
+        /**
+         * 图片附件
+         */
+        private ImageAttachment image;
+
+        /**
+         * 链接附件
+         */
+        private LinkAttachment link;
+
+        /**
+         * 小程序附件
+         */
+        private MiniprogramAttachment miniprogram;
+
+        /**
+         * 视频附件
+         */
+        private VideoAttachment video;
+
+        /**
+         * 文件附件
+         */
+        private FileAttachment file;
+    }
+
+    /**
+     * 图片附件
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ImageAttachment {
+        @SerializedName("media_id")
+        private String mediaId;
+
+        @SerializedName("pic_url")
+        private String picUrl;
+    }
+
+    /**
+     * 链接附件
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LinkAttachment {
+        /**
+         * 图文消息标题，最长为128字节
+         */
+        private String title;
+
+        /**
+         * 图文消息封面的url
+         */
+        private String picurl;
+
+        /**
+         * 图文消息的描述，最长为512字节
+         */
+        private String desc;
+
+        /**
+         * 图文消息的链接
+         */
+        private String url;
+    }
+
+    /**
+     * 小程序附件
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MiniprogramAttachment {
+        /**
+         * 小程序消息标题，最长为64字节
+         */
+        private String title;
+
+        /**
+         * 小程序消息封面的mediaid
+         */
+        @SerializedName("pic_media_id")
+        private String picMediaId;
+
+        /**
+         * 小程序appid
+         */
+        private String appid;
+
+        /**
+         * 小程序page路径
+         */
+        private String page;
+    }
+
+    /**
+     * 视频附件
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class VideoAttachment {
+        @SerializedName("media_id")
+        private String mediaId;
+    }
+
+    /**
+     * 文件附件
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class FileAttachment {
+        @SerializedName("media_id")
+        private String mediaId;
     }
 }
 

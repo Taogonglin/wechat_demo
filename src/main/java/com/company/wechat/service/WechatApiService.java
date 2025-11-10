@@ -26,8 +26,8 @@ public class WechatApiService {
     private static final Logger logger = LoggerFactory.getLogger(WechatApiService.class);
     private static final String ACCESS_TOKEN_KEY = "wechat:work:access_token";
     private static final String GET_TOKEN_URL = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s";
-    // 发送欢迎语API（用于新添加的客户）- 使用客服欢迎语接口
-    private static final String SEND_WELCOME_MSG_URL = "https://qyapi.weixin.qq.com/cgi-bin/kf/send_msg_on_event?access_token=%s";
+    // 发送欢迎语API（外部联系人欢迎语接口）
+    private static final String SEND_WELCOME_MSG_URL = "https://qyapi.weixin.qq.com/cgi-bin/externalcontact/send_welcome_msg?access_token=%s";
     // 发送应用消息API（用于已添加的客户）
     private static final String SEND_MESSAGE_URL = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s";
 
@@ -41,7 +41,7 @@ public class WechatApiService {
 
     /**
      * 获取Access Token（带缓存）
-     * 使用微信客服应用的secret来获取
+     * 使用自建应用的secret来获取（需要配置"企业客户权限"）
      */
     public String getAccessToken() {
         try {
@@ -86,18 +86,17 @@ public class WechatApiService {
             String accessToken = getAccessToken();
             String url = String.format(SEND_WELCOME_MSG_URL, accessToken);
 
-            // 构建欢迎语请求（使用客服欢迎语接口格式）
-            // 根据官方文档：https://developer.work.weixin.qq.com/document/path/95122
+            // 构建欢迎语请求（外部联系人欢迎语接口）
+            // 根据官方文档：https://developer.work.weixin.qq.com/document/path/92137
             WelcomeMessageRequest request = WelcomeMessageRequest.builder()
-                    .code(welcomeCode)  // 使用code参数，不是welcome_code
-                    .msgtype("text")     // 消息类型为文本
+                    .welcomeCode(welcomeCode)  // 使用welcome_code参数
                     .text(WelcomeMessageRequest.TextContent.builder()
                             .content(content)
                             .build())
                     .build();
 
             String jsonRequest = gson.toJson(request);
-            logger.info("发送欢迎语给客户: code={}, 内容: {}", welcomeCode, content);
+            logger.info("发送欢迎语给客户: welcomeCode={}, 内容: {}", welcomeCode, content);
 
             String response = HttpUtil.doPostString(url, jsonRequest);
             WechatResponse<?> result = gson.fromJson(response, WechatResponse.class);
