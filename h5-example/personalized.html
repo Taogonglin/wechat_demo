@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>客户信息完善</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            word-break: break-all;
+            text-align: right;
+            max-width: 60%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 客户信息完善</h1>
+            <p>感谢您的配合，请完善以下信息</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="info-card">
+            <div class="info-item">
+                <span class="info-label">客户ID</span>
+                <span class="info-value" id="externalUserId">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">识别状态</span>
+                <span class="status-badge" id="statusBadge">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">访问时间</span>
+                <span class="info-value" id="visitTime">-</span>
+            </div>
+        </div>
+
+        <form id="customerForm">
+            <div class="form-group">
+                <label for="name">姓名 *</label>
+                <input type="text" id="name" name="name" placeholder="请输入您的姓名" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">联系电话 *</label>
+                <input type="tel" id="phone" name="phone" placeholder="请输入您的联系电话" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">电子邮箱</label>
+                <input type="email" id="email" name="email" placeholder="请输入您的电子邮箱">
+            </div>
+
+            <div class="form-group">
+                <label for="remark">备注信息</label>
+                <textarea id="remark" name="remark" placeholder="请输入其他需要补充的信息"></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">提交信息</button>
+        </form>
+
+        <div class="footer">
+            <p>企业微信客户管理系统</p>
+            <p>您的信息将被安全保护</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取URL参数
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // 显示提示信息
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-info';
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+            
+            // 3秒后自动消失
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 3000);
+        }
+
+        // 页面加载时初始化
+        window.onload = function() {
+            // 获取external_userid参数
+            const externalUserId = getUrlParameter('external_userid');
+            
+            // 显示客户ID
+            document.getElementById('externalUserId').textContent = externalUserId || '未识别';
+            
+            // 显示识别状态
+            const statusBadge = document.getElementById('statusBadge');
+            if (externalUserId) {
+                statusBadge.textContent = '已识别';
+                statusBadge.className = 'status-badge status-success';
+                
+                // 显示欢迎信息
+                showAlert('✅ 已成功识别您的身份，请完善以下信息', 'success');
+            } else {
+                statusBadge.textContent = '未识别';
+                statusBadge.className = 'status-badge status-warning';
+                
+                // 显示警告信息
+                showAlert('⚠️ 未能识别您的身份，请确保从企业微信消息中打开此链接', 'info');
+            }
+            
+            // 显示访问时间
+            const now = new Date();
+            const timeString = now.getFullYear() + '-' + 
+                String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(now.getDate()).padStart(2, '0') + ' ' +
+                String(now.getHours()).padStart(2, '0') + ':' + 
+                String(now.getMinutes()).padStart(2, '0') + ':' + 
+                String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('visitTime').textContent = timeString;
+            
+            console.log('页面参数:', {
+                externalUserId: externalUserId,
+                fullUrl: window.location.href
+            });
+        };
+
+        // 表单提交处理
+        document.getElementById('customerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const externalUserId = getUrlParameter('external_userid');
+            
+            if (!externalUserId) {
+                alert('错误：未能识别您的身份，无法提交信息');
+                return;
+            }
+            
+            // 收集表单数据
+            const formData = {
+                externalUserId: externalUserId,
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                remark: document.getElementById('remark').value,
+                submitTime: new Date().toISOString()
+            };
+            
+            console.log('提交的表单数据:', formData);
+            
+            // 这里应该调用后端接口保存数据
+            // fetch('/api/customer/save-info', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify(formData)
+            // })
+            // .then(response => response.json())
+            // .then(data => {
+            //     if (data.success) {
+            //         showAlert('✅ 信息提交成功，感谢您的配合！', 'success');
+            //         setTimeout(() => {
+            //             // 可以跳转到感谢页面或关闭窗口
+            //         }, 2000);
+            //     } else {
+            //         showAlert('❌ 提交失败，请稍后重试', 'info');
+            //     }
+            // })
+            // .catch(error => {
+            //     console.error('提交错误:', error);
+            //     showAlert('❌ 网络错误，请稍后重试', 'info');
+            // });
+            
+            // 模拟提交成功
+            showAlert('✅ 信息提交成功！（演示模式，实际未保存）', 'success');
+            
+            // 清空表单
+            setTimeout(() => {
+                this.reset();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
+
